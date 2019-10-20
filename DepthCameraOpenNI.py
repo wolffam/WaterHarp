@@ -27,8 +27,7 @@ class DepthCameraOpenNI(DepthCamera):
             dev = openni2.Device.open_any()
         except OpenNIError as exc:
             print("Unable to open any depth camera:", exc)
-            self.fp.sendError("Unable to open any depth camera")
-            return False
+            raise Exception("Unable to open any depth camera")
 
         # Create the streams stream
         self.depth_stream = dev.create_depth_stream()
