@@ -1,80 +1,80 @@
-
-
-import numpy as N
 import numpy as np
 import pygame
 import pygame.surfarray as surfarray
-from pygame.locals import *
-from numpy import int32, uint8, uint
+from numpy import int32
 
+from WaterHarpAudio import WaterHarpAudio
 from DepthCameraOpenNI import DepthCameraOpenNI
 
 
-def display_surface(array_img, name):
-    "displays a surface, waits for user to continue"
-    screen = pygame.display.set_mode(array_img.shape[:2], 0)
-    surfarray.blit_array(screen, array_img)
-    pygame.display.flip()
-    pygame.display.set_caption(name)
+class WaterHarp:
+    NUM_STREAMS = 16
+    LEFT_STREAM_INDEX = 9
+    RIGHT_STREAM_INDEX = 294
+    BACKGROUND = 50000
+    THRESHOLD = 950  # Found through calibration
 
+    def __init__(self):
+        self.openni_cam = DepthCameraOpenNI(None)
+        self.openni_cam.start()
+        dmap = self.openni_cam.get_dmap()
+        self.dtex = np.zeros((len(dmap[0]), len(dmap), 3), int32)
+        self.audio = WaterHarpAudio()
 
-openni_cam = DepthCameraOpenNI(None)
+    def display_surface(self, name="Water Harp"):
+        "displays a surface, waits for user to continue"
+        screen = pygame.display.set_mode(self.dtex.shape[:2], 0)
+        surfarray.blit_array(screen, self.dtex)
+        pygame.display.flip()
+        pygame.display.set_caption(name)
 
-openni_cam.start()
-dmap = openni_cam.get_dmap()
-
-dtex = N.zeros((len(dmap[0]), len(dmap), 3), int32)
-
-currrow = 0
-currcol = 0
-
-left_stream_index = 9
-right_stream_index = 294
-
-num_streams = 16
-DMAP_CONSTANT = 100000
-
-
-while(True):
-    dmap = openni_cam.get_dmap()
-    dmap[dmap == 0] = DMAP_CONSTANT
-    x_bins = [int(x) for x in np.linspace(left_stream_index, right_stream_index, num_streams)]
-    stream_indicators = []
-    for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
-        mins = np.min(dmap[:, left_idx:x_bins[x_bins_idx + 1]], axis=0)  # get min for every column in AOI
-        stream_indicators.append(np.mean(mins))
-
-    print(stream_indicators)
-
-
-    # print(len(dmap))
-    # print(len(dmap[0]))
-    # print(dtex.shape)
-    minval = dmap.min().min()
-    maxval = dmap.max().max()
-    # print("min=",minval,", max=",maxval)
-    currrow = 0
-    currcol = 0
-    for row in dmap:
-        
-        for col in row:            
-            newval = 0
-            if type(col) != np.nan:
-              newval = (int) ((col-minval)*255/(maxval - minval))
-            # print(newval);
-            dtex[currcol][currrow][0] = newval
-
-
-            currcol = currcol + 1
-        currrow = currrow + 1
+    def play_video(self, dmap):
+        minval = dmap.min().min()
+        maxval = dmap.max().max()
+        currrow = 0
         currcol = 0
+        for row in dmap:
+
+            for col in row:
+                newval = 0
+                if type(col) != np.nan:
+                    newval = (int)((col - minval) * 255 / (maxval - minval))
+                self.dtex[currcol][currrow][0] = newval
+
+                currcol = currcol + 1
+            currrow = currrow + 1
+            currcol = 0
+
+        self.display_surface('WaterHarp')
+        # e = pygame.event.wait()
+        # if e.type == MOUSEBUTTONDOWN:
+
+        #     print(pygame.mouse.get_pos())
+
+    def run(self):
+        while True:
+            dmap = self.openni_cam.get_dmap()
+            dmap[dmap == 0] = WaterHarp.BACKGROUND
+            x_bins = [int(x) for x in np.linspace(WaterHarp.LEFT_STREAM_INDEX, WaterHarp.RIGHT_STREAM_INDEX, WaterHarp.NUM_STREAMS + 1)]
+            stream_indicators = []
+            for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
+                subarray = dmap[:, left_idx:x_bins[x_bins_idx + 1]]
+                mins = np.min(subarray, axis=0)  # get min for every column in AOI
+                if np.mean(mins) < WaterHarp.THRESHOLD:
+                    low_vals = np.where(subarray < WaterHarp.THRESHOLD)
+                    height = np.mean(low_vals[0])
+                    volume = 1 - (height / (240 - 0))  # 0 -> 1
+                    stream_indicators.append(volume)
+                else:
+                    stream_indicators.append(0)
+            # print(stream_indicators)
+
+            self.audio.play_notes(stream_indicators)
+
+            self.play_video(dmap)
+
+            pygame.time.delay(100)
 
 
-    display_surface(dtex, 'WaterHarp')
-    print(pygame.mouse.get_pos())
-    # e = pygame.event.wait()
-    # if e.type == MOUSEBUTTONDOWN:
-
-    #     print(pygame.mouse.get_pos())
-    
-    pygame.time.delay(100)
+if __name__ == "__main__":
+    WaterHarp().run()

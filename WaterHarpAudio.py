@@ -1,7 +1,6 @@
 import os
-import time
-from random import randint
 from typing import List
+from typing import Tuple
 
 import pygame
 
@@ -15,25 +14,21 @@ class WaterHarpAudio:
 
     def __init__(self):
         self.current_channel = 0
+        self.last_kinect_array = None
 
         pygame.mixer.init()
         pygame.mixer.set_num_channels(WaterHarpAudio.NUM_AUDIO_CHANNELS)
 
     def play_notes(self, kinect_array: List[float]):
-        assert len(kinect_array) == WaterHarpAudio.NUM_STREAMS, "Check kinect array length!"
-        for idx, height in enumerate(kinect_array):
-            assert 0 <= height <= 1, "Height not between 0, 1!"
-            if height > 0.001:  # if not zero
+        channel_and_volume = [None] * WaterHarpAudio.NUM_STREAMS  # type: List[Tuple[int, float]]
+        for idx, volume in enumerate(kinect_array):
+            if volume > 0.001:  # if not zero
+#                if not channel_and_volume[idx][0] or not pygame.mixer.Channel(channel_and_volume[idx][0]).get_busy():  # If channel not assigned or not playing
                 sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[idx])
                 sound = pygame.mixer.Sound(sound_filepath)
-                sound.set_volume(height)
-                pygame.mixer.Channel(self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS).play(sound)
+                sound.set_volume(volume)
+                bounded_channel = self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS
+                pygame.mixer.Channel(bounded_channel).play(sound)
+                channel_and_volume[idx] = (bounded_channel, volume)  # Assign channel and volume currently playing to the proper stream
                 self.current_channel += 1
-
-
-audio = WaterHarpAudio()
-kinect_test_array = [0.] * 16
-rint = randint(0, 15)
-kinect_test_array[rint] = .8
-audio.play_notes(kinect_test_array)
-time.sleep(2)
+        self.last_kinect_array = kinect_array
