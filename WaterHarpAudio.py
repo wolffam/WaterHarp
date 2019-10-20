@@ -1,4 +1,7 @@
 import os
+import time
+from random import randint
+from typing import List
 
 import pygame
 
@@ -6,7 +9,8 @@ import pygame
 class WaterHarpAudio:
     NUM_STREAMS = 16
     NUM_AUDIO_CHANNELS = NUM_STREAMS * 10
-    MUSIC_DIR = "data/sounds/Fingerstyle Electric Base"
+    l = os.listdir(".")
+    MUSIC_DIR = os.path.join(os.path.dirname(__file__), 'data/sounds/Fingerstyle_Electric_Base')
     NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]))
 
     def __init__(self):
@@ -15,7 +19,7 @@ class WaterHarpAudio:
         pygame.mixer.init()
         pygame.mixer.set_num_channels(WaterHarpAudio.NUM_AUDIO_CHANNELS)
 
-    def play_notes(self, kinect_array):
+    def play_notes(self, kinect_array: List[float]):
         assert len(kinect_array) == WaterHarpAudio.NUM_STREAMS, "Check kinect array length!"
         for idx, height in enumerate(kinect_array):
             assert 0 <= height <= 1, "Height not between 0, 1!"
@@ -28,4 +32,8 @@ class WaterHarpAudio:
 
 
 audio = WaterHarpAudio()
-audio.play_notes(ARRAY)
+kinect_test_array = [0.] * 16
+rint = randint(0, 15)
+kinect_test_array[rint] = .8
+audio.play_notes(kinect_test_array)
+time.sleep(2)
