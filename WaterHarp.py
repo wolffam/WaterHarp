@@ -28,12 +28,28 @@ dtex = N.zeros((len(dmap[0]), len(dmap), 3), int32)
 currrow = 0
 currcol = 0
 
-left_sol_index = 0
-right_sol_index = 319
+left_stream_index = 9
+right_stream_index = 294
+
+num_streams = 16
 
 
 while(True):
     dmap = openni_cam.get_dmap()   
+    x_bins = [int(x) for x in np.linspace(left_stream_index, right_stream_index, num_streams)]
+    print(type(x_bins))
+    print(len(x_bins))
+    print(x_bins)
+    stream_indicators = []
+    for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
+      print(x_bins_idx)
+      print(dmap[left_idx:x_bins[x_bins_idx + 1], :])
+      mins = np.min(dmap[left_idx:x_bins[x_bins_idx + 1], :], axis=0)  # get min for every column in AOI
+      stream_indicators.append(np.median(mins))
+
+    print(stream_indicators)
+
+
     # print(len(dmap))
     # print(len(dmap[0]))
     # print(dtex.shape)
@@ -43,16 +59,25 @@ while(True):
     currrow = 0
     currcol = 0
     for row in dmap:
-        for col in row:
+        
+        for col in row:            
             newval = 0
             if type(col) != np.nan:
               newval = (int) ((col-minval)*255/(maxval - minval))
             # print(newval);
             dtex[currcol][currrow][0] = newval
+
+
             currcol = currcol + 1
         currrow = currrow + 1
         currcol = 0
 
+
     display_surface(dtex, 'WaterHarp')
+    print(pygame.mouse.get_pos())
+    # e = pygame.event.wait()
+    # if e.type == MOUSEBUTTONDOWN:
+
+    #     print(pygame.mouse.get_pos())
     
     pygame.time.delay(100)

@@ -41,7 +41,7 @@ class DepthCameraOpenNI(DepthCamera):
 
         # Check and configure the mirroring -- default is True
         # print 'Mirroring info1', depth_stream.get_mirroring_enabled()
-        self.depth_stream.set_mirroring_enabled(True)
+        self.depth_stream.set_mirroring_enabled(False)
 
         # Start the streams
         self.depth_stream.start()
