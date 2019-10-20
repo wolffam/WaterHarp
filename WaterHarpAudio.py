@@ -1,4 +1,6 @@
 import os
+import time
+from random import randint
 
 import pygame
 
@@ -6,20 +8,22 @@ import pygame
 class WaterHarpAudio:
     NUM_STREAMS = 16
     NUM_AUDIO_CHANNELS = NUM_STREAMS * 10
-    MUSIC_DIR = ""
-    NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")])
+    MUSIC_DIR = "/Users/alex/Documents/Fingerstyle Electric Base"
+    NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]))
 
     def __init__(self):
         self.streams_update = None  # type: StreamsUpdate
         self.current_channel = 0
 
-        pygame.mixer.init(channels=WaterHarpAudio.NUM_AUDIO_CHANNELS)
+        pygame.mixer.init()
+        pygame.mixer.set_num_channels(WaterHarpAudio.NUM_AUDIO_CHANNELS)
 
     def play_notes(self):
-        for state, idx in enumerate(self.streams_update.stream_states):
+        for idx, state in enumerate(self.streams_update.stream_states):
             if state:
-                sound = pygame.mixer.Sound(os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[idx]))
-                pygame.mixer.Channel(self.current_channel).play(sound)
+                sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[idx])
+                sound = pygame.mixer.Sound(sound_filepath)
+                pygame.mixer.Channel(self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS).play(sound)
                 self.current_channel += 1
         self.streams_update = None
 
@@ -43,3 +47,19 @@ class StreamsUpdate:
         for i in range(16):
             self.stream_states.append(False)
         self.stream_states[2] = True
+
+
+audio = WaterHarpAudio()
+audio.streams_update = StreamsUpdate()
+
+audio.streams_update.stream_states = [False] * 16
+random_int = randint(0, 15)
+audio.streams_update.stream_states[random_int] = True
+random_int = randint(0, 15)
+audio.streams_update.stream_states[random_int] = True
+random_int = randint(0, 15)
+audio.streams_update.stream_states[random_int] = True
+
+
+audio.play_notes()
+time.sleep(2)
