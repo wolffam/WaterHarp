@@ -27,6 +27,7 @@ class WaterHarpAudio:
                 sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[idx])
                 sound = pygame.mixer.Sound(sound_filepath)
                 sound.set_volume(height)
+		sound.fadeout(3000)
                 pygame.mixer.Channel(self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS).play(sound)
                 self.current_channel += 1
 
