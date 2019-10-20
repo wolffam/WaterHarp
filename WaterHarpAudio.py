@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import mido
@@ -8,8 +9,8 @@ class WaterHarpAudio:
     NUM_STREAMS = 16
     NUM_AUDIO_CHANNELS = NUM_STREAMS * 10
     TURN_OFF_STREAMS = True
-    # MUSIC_DIR = os.path.join(os.path.dirname(__file__), 'data/sounds/MelodiousBass')
-    # NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]), reverse=True)
+    MUSIC_DIR = os.path.join(os.path.dirname(__file__), 'data/sounds/MelodiousBass')
+    NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]), reverse=True)
     CAMILLE_SCALE = (57, 60, 62, 64, 67, 69, 72, 74, 76, 79, 81, 84, 86, 88, 91, 93)
     C_MAJOR_SCALE = (48, 50, 52, 53, 55, 57, 59, 62, 64, 65, 67, 69, 71, 72, 74, 76)
 
@@ -20,7 +21,7 @@ class WaterHarpAudio:
 
         pygame.mixer.init()
         pygame.mixer.set_num_channels(WaterHarpAudio.NUM_AUDIO_CHANNELS)
-        self.midi_outport = mido.open_output(name='test', virtual=True)
+        #self.midi_outport = mido.open_output(name='test', virtual=True)
 
     def play_notes(self, kinect_array: List[float]):
         # Find notes to play
@@ -39,19 +40,10 @@ class WaterHarpAudio:
         self.last_kinect_array = kinect_array
 
     def play_note(self, note_idx, volume):
-
-        msg = mido.Message('note_on', channel=0, note=WaterHarpAudio.C_MAJOR_SCALE[note_idx], velocity=max(int(127 * volume), 40))
-        self.midi_outport.send(msg)
-        # time.sleep(.2)
-        # msg = mido.Message('note_off', channel=0, note=note, velocity=127)
-        # self.midi_outport.send(msg)
-
-
-
-        # sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[note_idx])
-        # sound = pygame.mixer.Sound(sound_filepath)
-        # sound.set_volume(volume)
-        # bounded_channel = self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS
-        # chan = pygame.mixer.Channel(bounded_channel).play(sound)
-        # self.stream_channels[note_idx] = chan
-        # self.current_channel += 1
+        sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[note_idx])
+        sound = pygame.mixer.Sound(sound_filepath)
+        sound.set_volume(volume)
+        bounded_channel = self.current_channel % WaterHarpAudio.NUM_AUDIO_CHANNELS
+        chan = pygame.mixer.Channel(bounded_channel).play(sound)
+        self.stream_channels[note_idx] = chan
+        self.current_channel += 1
