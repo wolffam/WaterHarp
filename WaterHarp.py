@@ -32,20 +32,17 @@ left_stream_index = 9
 right_stream_index = 294
 
 num_streams = 16
+DMAP_CONSTANT = 100000
 
 
 while(True):
-    dmap = openni_cam.get_dmap()   
+    dmap = openni_cam.get_dmap()
+    dmap[dmap == 0] = DMAP_CONSTANT
     x_bins = [int(x) for x in np.linspace(left_stream_index, right_stream_index, num_streams)]
-    print(type(x_bins))
-    print(len(x_bins))
-    print(x_bins)
     stream_indicators = []
     for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
-      print(x_bins_idx)
-      print(dmap[left_idx:x_bins[x_bins_idx + 1], :])
-      mins = np.min(dmap[left_idx:x_bins[x_bins_idx + 1], :], axis=0)  # get min for every column in AOI
-      stream_indicators.append(np.median(mins))
+        mins = np.min(dmap[:, left_idx:x_bins[x_bins_idx + 1]], axis=0)  # get min for every column in AOI
+        stream_indicators.append(np.mean(mins))
 
     print(stream_indicators)
 
