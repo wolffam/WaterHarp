@@ -1,6 +1,7 @@
 
 
 import numpy as N
+import numpy as np
 import pygame
 import pygame.surfarray as surfarray
 from pygame.locals import *
@@ -17,22 +18,22 @@ def display_surface(array_img, name):
     pygame.display.set_caption(name)
 
 
-test = DepthCameraOpenNI(None)
+openni_cam = DepthCameraOpenNI(None)
 
-test.start()
-dmap = test.get_dmap()
-
+openni_cam.start()
+dmap = openni_cam.get_dmap()
 
 dtex = N.zeros((len(dmap[0]), len(dmap), 3), int32)
-# allblack = N.zeros((128,128), int32)
 
 currrow = 0
 currcol = 0
 
+left_sol_index = 0
+right_sol_index = 319
 
 
 while(True):
-    dmap = test.get_dmap()   
+    dmap = openni_cam.get_dmap()   
     # print(len(dmap))
     # print(len(dmap[0]))
     # print(dtex.shape)
@@ -43,13 +44,14 @@ while(True):
     currcol = 0
     for row in dmap:
         for col in row:
-            newval = (int) ((col-minval)*255/(maxval - minval))
+            newval = 0
+            if type(col) != np.nan:
+              newval = (int) ((col-minval)*255/(maxval - minval))
             # print(newval);
             dtex[currcol][currrow][0] = newval
             currcol = currcol + 1
         currrow = currrow + 1
         currcol = 0
-
 
     display_surface(dtex, 'WaterHarp')
     
