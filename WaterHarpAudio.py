@@ -8,7 +8,7 @@ import pygame
 class WaterHarpAudio:
     NUM_STREAMS = 16
     NUM_AUDIO_CHANNELS = NUM_STREAMS * 10
-    MUSIC_DIR = "/Users/alex/Documents/Fingerstyle Electric Base"
+    MUSIC_DIR = "./data/sounds/Fingerstyle Electric Base"
     NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]))
 
     def __init__(self):
