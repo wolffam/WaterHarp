@@ -8,9 +8,8 @@ class WaterHarpAudio:
     NUM_STREAMS = 16
     NUM_AUDIO_CHANNELS = NUM_STREAMS * 10
     TURN_OFF_STREAMS = True
-    l = os.listdir(".")
-    MUSIC_DIR = os.path.join(os.path.dirname(__file__), 'data/sounds/Fingerstyle_Electric_Base')
-    NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]))
+    MUSIC_DIR = os.path.join(os.path.dirname(__file__), 'data/sounds/MelodiousBass')
+    NOTES = sorted([x for x in os.listdir(MUSIC_DIR) if x.endswith(".wav")], key=lambda x: int(x.split("_")[0]), reverse=True)
 
     def __init__(self):
         self.current_channel = 0
@@ -24,6 +23,8 @@ class WaterHarpAudio:
         # Find notes to play
         for idx, volume in enumerate(kinect_array):
             if volume > 0.001 >= self.last_kinect_array[idx]:  # If the note was OFF previously and is now ON
+                minindx = max(0, idx - 1)
+                maxindx = min(WaterHarpAudio.NUM_STREAMS, idx + 1)
                 self.play_note(idx, volume)
                 print("PLAYED: {}, VOLUME: {}".format(WaterHarpAudio.NOTES[idx].split("_")[-1], volume))
 

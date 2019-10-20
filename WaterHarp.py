@@ -9,8 +9,8 @@ from DepthCameraOpenNI import DepthCameraOpenNI
 
 class WaterHarp:
     NUM_STREAMS = 16
-    LEFT_STREAM_INDEX = 20
-    RIGHT_STREAM_INDEX = 285
+    LEFT_STREAM_INDEX = 54
+    RIGHT_STREAM_INDEX = 295
     TOP = 10
     BOTTOM = 230
     BACKGROUND = 50000
@@ -59,17 +59,20 @@ class WaterHarp:
             dmap[dmap < WaterHarp.THRESHOLD / 2] = WaterHarp.BACKGROUND
             x_bins = [int(x) for x in np.linspace(WaterHarp.LEFT_STREAM_INDEX, WaterHarp.RIGHT_STREAM_INDEX, WaterHarp.NUM_STREAMS + 1)]
             stream_indicators = []
+            last_num_below = 0
             for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
                 subarray = dmap[WaterHarp.TOP:WaterHarp.BOTTOM, left_idx:x_bins[x_bins_idx + 1]]
                 below_threshold = np.where(subarray < WaterHarp.THRESHOLD)
                 num_below = len(below_threshold[0])
-                if num_below > 20:
+                #if num_below > 50:
+                    #print("NUM BELOW: {}, IDX: {}".format(num_below, x_bins_idx))
+                if num_below > 50:
                     height = np.mean(below_threshold[0])
                     volume = np.round(1.3 - (height / (WaterHarp.BOTTOM - WaterHarp.TOP)), 2)  # 0 -> 1
-                    stream_indicators.append(min([volume, 1]))
+                    if num_below > last_num_below:
+                        stream_indicators.append(min([volume, 1]))
                 else:
                     stream_indicators.append(0)
-
             self.audio.play_notes(stream_indicators)
             #self.play_video(dmap)
 
