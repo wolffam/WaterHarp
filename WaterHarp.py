@@ -37,12 +37,14 @@ DMAP_CONSTANT = 100000
 
 while(True):
     dmap = openni_cam.get_dmap()
+    dmap[dmap == np.nan] = DMAP_CONSTANT
     dmap[dmap == 0] = DMAP_CONSTANT
+    dmap[dmap > 950] = DMAP_CONSTANT
     x_bins = [int(x) for x in np.linspace(left_stream_index, right_stream_index, num_streams)]
     stream_indicators = []
     for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
         mins = np.min(dmap[:, left_idx:x_bins[x_bins_idx + 1]], axis=0)  # get min for every column in AOI
-        stream_indicators.append(np.mean(mins))
+        stream_indicators.append((int(np.mean(mins))))
 
     print(stream_indicators)
 
@@ -52,6 +54,8 @@ while(True):
     # print(dtex.shape)
     minval = dmap.min().min()
     maxval = dmap.max().max()
+    print("minval", minval)
+    print("maxval", maxval)
     # print("min=",minval,", max=",maxval)
     currrow = 0
     currcol = 0
@@ -59,8 +63,8 @@ while(True):
         
         for col in row:            
             newval = 0
-            if type(col) != np.nan:
-              newval = (int) ((col-minval)*255/(maxval - minval))
+            if type(col) != np.nan and maxval - minval > 0:
+              newval = (int)((col-minval)*255/(maxval - minval))
             # print(newval);
             dtex[currcol][currrow][0] = newval
 
@@ -71,7 +75,8 @@ while(True):
 
 
     display_surface(dtex, 'WaterHarp')
-    print(pygame.mouse.get_pos())
+    mouse_pos = pygame.mouse.get_pos()
+    print("mouse_coords", mouse_pos, "  mouse_val", dmap[mouse_pos[1]][mouse_pos[0]])
     # e = pygame.event.wait()
     # if e.type == MOUSEBUTTONDOWN:
 
