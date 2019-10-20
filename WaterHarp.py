@@ -9,12 +9,12 @@ from DepthCameraOpenNI import DepthCameraOpenNI
 
 class WaterHarp:
     NUM_STREAMS = 16
-    LEFT_STREAM_INDEX = 15
-    RIGHT_STREAM_INDEX = 290
+    LEFT_STREAM_INDEX = 20
+    RIGHT_STREAM_INDEX = 285
     TOP = 10
     BOTTOM = 230
     BACKGROUND = 50000
-    THRESHOLD = 950  # Found through calibration
+    THRESHOLD = 910  # Found through calibration
 
     def __init__(self):
         self.openni_cam = DepthCameraOpenNI(None)
@@ -40,7 +40,7 @@ class WaterHarp:
             for col in row:
                 newval = 0
                 if type(col) != np.nan:
-                    newval = (int)((col - minval) * 255 / (maxval - minval))
+                    newval = int((col - minval) * 255 / (maxval - minval))
                 self.dtex[currcol][currrow][0] = newval
 
                 currcol = currcol + 1
@@ -62,19 +62,16 @@ class WaterHarp:
             for x_bins_idx, left_idx in enumerate(x_bins[:-1]):
                 subarray = dmap[WaterHarp.TOP:WaterHarp.BOTTOM, left_idx:x_bins[x_bins_idx + 1]]
                 below_threshold = np.where(subarray < WaterHarp.THRESHOLD)
-                num_below = len(below_threshold[0]) * len(below_threshold[1])
+                num_below = len(below_threshold[0])
                 if num_below > 20:
                     height = np.mean(below_threshold[0])
-                    volume = np.round(1 - (height / (240 - 0)), 2)  # 0 -> 1
-                    stream_indicators.append(volume)
+                    volume = np.round(1.3 - (height / (WaterHarp.BOTTOM - WaterHarp.TOP)), 2)  # 0 -> 1
+                    stream_indicators.append(min([volume, 1]))
                 else:
                     stream_indicators.append(0)
 
             self.audio.play_notes(stream_indicators)
             #self.play_video(dmap)
-
-            #pygame.time.delay(1)
-
 
 if __name__ == "__main__":
     WaterHarp().run()
