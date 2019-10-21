@@ -32,6 +32,9 @@ class WaterHarpAudio:
             for idx, volume in enumerate(kinect_array):
                 if volume > 0.001 >= self.last_kinect_array[idx]:  # If the note was OFF previously and is now ON
                     self.play_note(idx, volume)
+                elif volume < 0.001 <= self.last_kinect_array[idx]:
+                    self.stop_note(idx)
+
                     #print("PLAYED: {}, VOLUME: {}".format(WaterHarpAudio.C_MAJOR_SCALE[idx], volume))
 
                 if WaterHarpAudio.TURN_OFF_STREAMS:
@@ -46,12 +49,13 @@ class WaterHarpAudio:
     def all_notes_off(self):
         self.midi_outport.reset()
 
-    def play_note(self, note_idx, volume):
+    def stop_note(self, note_idx):
+        msg = mido.Message('note_off', channel=0, note=WaterHarpAudio.C_MIXOLYDIAN_SCALE[note_idx], velocity=127)
+        self.midi_outport.send(msg)
 
+    def play_note(self, note_idx, volume):
         msg = mido.Message('note_on', channel=0, note=WaterHarpAudio.C_MIXOLYDIAN_SCALE[note_idx], velocity=max(int(127 * volume), 40))
         self.midi_outport.send(msg)
-        # msg = mido.Message('note_off', channel=0, note=note, velocity=127)
-        # self.midi_outport.send(msg)
 
         #  Play sounds from files, not MIDI
         # sound_filepath = os.path.join(WaterHarpAudio.MUSIC_DIR, WaterHarpAudio.NOTES[note_idx])
