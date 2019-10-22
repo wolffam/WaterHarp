@@ -460,9 +460,9 @@ void setup() {
 
 
   // Initialize off-pcb DS18B20 sensor
-  //  temperatureSensors.begin();
-  //  temperatureSensors.getAddress(DS18B20_address, 0);
-  //  temperatureSensors.setResolution(DS18B20_address, 9);
+//  temperatureSensors.begin();
+//  temperatureSensors.getAddress(DS18B20_address, 0);
+//  temperatureSensors.setResolution(DS18B20_address, 9);
 
   // Make sure everything is initialized off
   solenoidEnable(false);
@@ -609,9 +609,8 @@ void flash()
 
 /********* Main loop *************/
 // Run a cycle of drops
-static const int ord[] = {2, 3, 4, 5, 1, 0, 7, 6, 9, 8, 15, 14, 10, 11, 12, 13};
-
 void cycle(int offset[16], int duration) {
+  static const int ord[] = {2, 3, 4, 5, 1, 0, 7, 6, 9, 8, 15, 14, 10, 11, 12, 13};
   int start = millis();
   bool active = 1;
   int maxoffset = 0;
