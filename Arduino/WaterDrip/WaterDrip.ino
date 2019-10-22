@@ -638,27 +638,49 @@ void cycle(int offset[16], int duration) {
 }
 
 void showline(unsigned short line) {
-  for (int i = 15; i >=0; i--) {
+  for (int i = 15; i >= 0; i--) {
     solenoid(ord[i], line & 1);
     line >>= 1;
   }
 }
 
-#include "shd.h"
+#include "all.h"
+int cur = 0;
 
 void showmessage(int len, unsigned short msg[], int period)  {
   for (int i = 0; i < len; i++) {
     delay(period);
     showline(msg[i]);
+    if (Serial.available() > 0)
+      return;
   }
   showline(0xffff);
 }
 
+
 void loop()
 {
+  if (Serial.available() > 0) {
+    byte in = Serial.read();
+    if (in >= '0' && in < ('0' + ndata)) {
+      cur = in - '0';
+      Serial.print("Src: ");
+      Serial.println(names[cur]);
+    } else {
+      for (int i = 0; i < ndata; i++) {
+        Serial.print(i);
+        Serial.print(" ");
+        Serial.println(names[i]);
+      }
+    }
+  }
+  Serial.print("Starting: ");
+  Serial.print(cur);
+  Serial.print(" ");
+  Serial.println(names[cur]);
   digitalWrite(DS18B20_EXT, HIGH);
-  showmessage(sizeof(shd) / sizeof(shd[0]), shd, 10);
-  delay(2000);
+  showmessage(len[cur], data[cur], step[cur]);
+  delay(del[cur]);
 }
 
 void loop1()
