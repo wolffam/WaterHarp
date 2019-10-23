@@ -41,18 +41,18 @@ class WaterHarp:
             print("dmap: min==max==",minval)
             return
         currrow = 0
-        currcol = 0
-        for row in dmap:
 
+        for row in dmap:
+            currcol = 0
             for col in row:
                 newval = 0
                 if type(col) != np.nan:
                     newval = int((col - minval) * 255 / (maxval - minval))
-                self.dtex[currcol][currrow][0] = newval
+                    self.dtex[currcol][currrow][0] = newval
+                    self.dtex[currcol][currrow][1] = 255 if WaterHarp.NEARTHRESH<col<WaterHarp.THRESHOLD else 0
 
                 currcol = currcol + 1
             currrow = currrow + 1
-            currcol = 0
 
         self.display_surface('WaterHarp')
         # e = pygame.event.wait()
