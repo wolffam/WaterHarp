@@ -15,6 +15,7 @@ class WaterHarp:
     BOTTOM = 230
     BACKGROUND = 50000
     THRESHOLD = 910  # Found through calibration
+    NEARTHRESH = THRESHOLD/2
 
     def __init__(self):
         self.openni_cam = DepthCameraOpenNI(None)
@@ -62,8 +63,8 @@ class WaterHarp:
     def run(self):
         while True:
             dmap = self.openni_cam.get_dmap()
-            dmap[dmap < WaterHarp.THRESHOLD / 2] = WaterHarp.BACKGROUND
             self.play_video(dmap)
+            dmap[dmap < WaterHarp.NEARTHRESH] = WaterHarp.BACKGROUND
             x_bins = [int(x) for x in np.linspace(WaterHarp.LEFT_STREAM_INDEX, WaterHarp.RIGHT_STREAM_INDEX, WaterHarp.NUM_STREAMS + 1)]
             stream_indicators = []
             last_num_below = 0
